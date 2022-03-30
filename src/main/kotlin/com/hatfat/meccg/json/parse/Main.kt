@@ -5,7 +5,7 @@ import com.google.gson.GsonBuilder
 @Suppress("UNUSED_PARAMETER")
 fun main(args: Array<String>) {
     val gson = GsonBuilder()
-        .setPrettyPrinting()
+//        .setPrettyPrinting()
         .disableHtmlEscaping()
         .create()
 
