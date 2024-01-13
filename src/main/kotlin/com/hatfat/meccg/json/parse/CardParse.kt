@@ -27,11 +27,13 @@ class CardParse(
         println("Removed The Wizards Unlimited, now have ${cardList.size} cards.")
 
         cardList = removeDreamcards(cardList)
+        println("Removed Dreamcards, now have ${cardList.size} cards.")
 
         removeEmptyStrings(cardList)
 
+        updateForRemasteredCardPaths(cardList)
+
         validateCardIds(cardList)
-        validateCardDCPaths(cardList)
 
         writeCardList(cardList, "output/cards-dc.json")
         println("Wrote ${cardList.size} cards.")
@@ -149,18 +151,43 @@ class CardParse(
         println("Found ${cardsThatNeedNewIds.size} cards that need an ID.")
     }
 
+    private fun updateForRemasteredCardPaths(cardList: List<MECCGCard>) {
+        validateCardDCPaths(cardList)
+        fixCaseForRemastered(cardList)
+    }
+
     private fun validateCardDCPaths(cardList: List<MECCGCard>) {
         println("Validating card DC paths.");
 
         for (card in cardList) {
             card.dcPath?.let {
                 if (it.endsWith("DC.jpg")) {
-                    println("Found card ending with DC.jpg: [${card.dcPath}] - Fixing.")
-
                     /* chop off the last 6 digits and re-append .jpg */
                     val newPrefix = it.subSequence(0, it.length - 6)
                     val newPath = "$newPrefix.jpg"
+                    println("  Corrected $it -> $newPath")
                     card.dcPath = newPath
+                }
+            }
+        }
+    }
+
+    private fun fixCaseForRemastered(cardList: List<MECCGCard>) {
+        println("Fixing case for remastered card paths.");
+
+        val corrections = HashSet<String>()
+        corrections.add("EchoofallJoy.jpg")
+        corrections.add("FaceOutofSight.jpg")
+
+        for (card in cardList) {
+            card.dcPath?.let {
+                for (correction in corrections) {
+                    if (it.endsWith(correction, true)) {
+                        val newPrefix = it.subSequence(0, it.length - correction.length)
+                        val newPath = "$newPrefix$correction"
+                        println("  Corrected $it -> $newPath")
+                        card.dcPath = newPath
+                    }
                 }
             }
         }
